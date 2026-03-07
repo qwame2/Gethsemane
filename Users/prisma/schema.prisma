@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id                String   @id @default(cuid())
+  username          String   @unique
+  firstName         String
+  lastName          String
+  email             String   @unique
+  phone             String
+  passwordHash      String
+  isSetupComplete   Boolean  @default(false)
+  image             String?
+  createdAt         DateTime @default(now())
+  securityAnswer1   String?
+  securityAnswer2   String?
+  securityQuestion1 String?
+  securityQuestion2 String?
+}
+
+model User {
+  id                     String       @id @default(cuid())
+  firstName              String
+  lastName               String
+  username               String?      @unique
+  email                  String       @unique
+  phone                  String?
+  passwordHash           String
+  role                   String       @default("member")
+  createdAt              DateTime     @default(now())
+  image                  String?
+  dismissedNotifications String[]     @default([])
+  securityAnswer1        String?
+  securityAnswer2        String?
+  securityQuestion1      String?
+  securityQuestion2      String?
+  duesProfile            DuesProfile?
+  payments               Payment[]
+  paymentIntents         PaymentIntent[]
+  paymentLedgers         PaymentLedger[]
+}
+
+model DuesProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  yearlyAmount    Float    @default(240.0)
+  totalPaid       Float    @default(0.0)
+  totalArrears    Float    @default(0.0)
+  currentMonthDue Float    @default(20.0)
+  status          String   @default("Unpaid")
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Float
+  status        String   @default("Pending")
+  type          String
+  transactionId String?  @unique
+  createdAt     DateTime @default(now())
+  eventId       String?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChurchMember {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  category  String
+  createdAt DateTime @default(now())
+  image     String?
+}
+
+model FundraisingEvent {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  isActive     Boolean   @default(false)
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  goalAmount   Float?
+  raisedAmount Float     @default(0.0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model SystemSettings {
+  id            String   @id @default("singleton")
+  churchName    String   @default("Gethsemane Assemble")
+  churchEmail   String   @default("support@gethsemane.com")
+  churchPhone   String   @default("+233 24 000 0000")
+  churchAddress String   @default("Accra, Ghana")
+  churchLogo    String?
+  yearlyDues    Float    @default(240.0)
+  monthlyDues   Float    @default(20.0)
+  latePenalty   Float    @default(20.0)
+  minInstallment Float   @default(70.0)
+  currency      String   @default("GHS")
+  updatedAt     DateTime @updatedAt
+}
+
+model PaymentIntent {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Float
+  reference String   @unique
+  status    String   @default("Pending")
+  type      String
+  eventId   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaymentLedger {
+  id          String   @id @default(cuid())
+  userId      String
+  paymentId   String
+  action      String
+  amount      Float
+  description String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
