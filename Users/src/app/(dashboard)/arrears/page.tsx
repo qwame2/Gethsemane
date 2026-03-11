@@ -67,7 +67,6 @@ export default function ArrearsPage() {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log("Initiating arrears payment...");
         if (!(window as any).PaystackPop) {
             console.error("PaystackPop not found on window object");
             toast.error("Payment system is still loading. Please wait a moment.");
@@ -83,17 +82,11 @@ export default function ArrearsPage() {
         const rawAmount = Number(paymentAmount);
 
         // Calculate transaction fee (0.41 Paystack + 0.30 withdrawal = ~0.71 for every 20 GHS => 3.55%)
-        const feeRate = 0.0355;
+        const feeRate = 0.032;
         const transactionFee = rawAmount * feeRate;
         const amountToCharge = rawAmount + transactionFee;
         const amountInPesewas = Math.round(amountToCharge * 100);
 
-        console.log("Arrears Payment Details:", {
-            email: userData.email,
-            amount: rawAmount,
-            amountInPesewas,
-            publicKeyExists: !!process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-        });
 
         if (isNaN(rawAmount) || rawAmount <= 0) {
             toast.error("Please enter a valid amount");
@@ -154,10 +147,8 @@ export default function ArrearsPage() {
     };
 
     const handleVerification = async (response: any, secureReference: string, amount: number) => {
-        console.log("[ARREARS] Verification started for ref:", secureReference, "Paystack Response:", response);
         try {
             const finalReference = response.reference || secureReference;
-            console.log(`[ARREARS] Querying server for: ${finalReference}`);
 
             const verifyRes = await fetch(`/api/payments/verify?reference=${finalReference}`, {
                 method: "GET",
@@ -308,8 +299,8 @@ export default function ArrearsPage() {
                                         </div>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 relative z-10">Standard Step</p>
                                         <div className="relative z-10">
-                                            <p className="text-xl sm:text-2xl font-extrabold text-black tracking-tight">GH₵{(Math.min(totalAmountOwing, 20) * 1.0355).toFixed(2)}</p>
-                                            <span className="text-[10px] text-slate-500 font-semibold mt-0.5 inline-block bg-white/50 px-2 py-0.5 rounded-md">Incl. GH₵{(Math.min(totalAmountOwing, 20) * 0.0355).toFixed(2)} fee</span>
+                                            <p className="text-xl sm:text-2xl font-extrabold text-black tracking-tight">GH₵{(Math.min(totalAmountOwing, 20) * 1.032).toFixed(2)}</p>
+                                             <span className="text-[10px] text-slate-500 font-semibold mt-0.5 inline-block bg-white/50 px-2 py-0.5 rounded-md">Incl. GH₵{(Math.min(totalAmountOwing, 20) * 0.032).toFixed(2)} fee</span>
                                         </div>
                                     </label>
 
@@ -345,8 +336,8 @@ export default function ArrearsPage() {
                                         </div>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5 relative z-10">Pay Full Owed</p>
                                         <div className="relative z-10">
-                                            <p className="text-xl sm:text-2xl font-extrabold text-black tracking-tight">GH₵{(totalAmountOwing * 1.0355).toFixed(2)}</p>
-                                            <span className="text-[10px] text-slate-400 font-semibold mt-0.5 inline-block bg-white/50 px-2 py-0.5 rounded-md">Incl. GH₵{(totalAmountOwing * 0.0355).toFixed(2)} fee</span>
+                                            <p className="text-xl sm:text-2xl font-extrabold text-black tracking-tight">GH₵{(totalAmountOwing * 1.032).toFixed(2)}</p>
+                                             <span className="text-[10px] text-slate-400 font-semibold mt-0.5 inline-block bg-white/50 px-2 py-0.5 rounded-md">Incl. GH₵{(totalAmountOwing * 0.032).toFixed(2)} fee</span>
                                         </div>
                                     </label>
                                 </div>
@@ -370,7 +361,7 @@ export default function ArrearsPage() {
                                         "bg-black hover:bg-zinc-800"
                                     )}
                                 >
-                                    {userData?.role === "Guest" ? "Payments disabled in Guest Mode" : isProcessing ? "Processing..." : `Settle GH₵ ${paymentAmount ? (Number(paymentAmount) * 1.0355).toFixed(2) : '0.00'}`}
+                                    {userData?.role === "Guest" ? "Payments disabled in Guest Mode" : isProcessing ? "Processing..." : `Settle GH₵ ${paymentAmount ? (Number(paymentAmount) * 1.032).toFixed(2) : '0.00'}`}
                                 </Button>
                                 <div className="flex items-center justify-center gap-2 mt-4 sm:mt-6">
                                     <ShieldCheck className="h-4 w-4 text-emerald-500" />

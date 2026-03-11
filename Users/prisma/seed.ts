@@ -9,7 +9,6 @@ const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
-    console.log('Starting Database Seeding...')
 
     // Clean up existing data for a fresh seed
     await prisma.payment.deleteMany()
@@ -42,8 +41,6 @@ async function main() {
         }
     })
 
-    console.log('Seeded Member:', user.email)
-    console.log('Seeding Completed Successfully.')
 }
 
 main()

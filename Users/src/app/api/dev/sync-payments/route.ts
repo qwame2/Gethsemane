@@ -21,7 +21,6 @@ export async function GET() {
                     });
                     psRes = await req.json();
                 } catch (e) {
-                    console.log("Paystack fetch failed for", p.transactionId);
                 }
 
                 if (psRes && psRes.data && psRes.data.metadata) {

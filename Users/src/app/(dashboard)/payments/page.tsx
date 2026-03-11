@@ -78,7 +78,7 @@ export default function PaymentsPage() {
             return;
         }
 
-        const feeRate = 0.0355;
+        const feeRate = 0.032;
         const transactionFee = rawAmount * feeRate;
         const amountToCharge = rawAmount + transactionFee;
         const amountInPesewas = Math.round(amountToCharge * 100);
@@ -145,11 +145,9 @@ export default function PaymentsPage() {
     };
 
     const handleVerification = async (response: any, secureReference: string, amount: number) => {
-        console.log("[PAYMENT] Verification started for ref:", secureReference, "Paystack Response:", response);
         try {
             // Use the most definitive reference!
             const finalReference = response.reference || secureReference;
-            console.log(`[PAYMENT] Querying server for: ${finalReference}`);
 
             const verifyRes = await fetch(`/api/payments/verify?reference=${finalReference}`, {
                 method: "GET",
@@ -479,8 +477,8 @@ export default function PaymentsPage() {
                                                 </div>
                                             </div>
                                             <div className="text-right flex flex-col items-end">
-                                                <div className="text-xl font-extrabold text-primary-600">GH₵{((stats?.currentMonthDue || 20) * 1.0355).toFixed(2)}</div>
-                                                <span className="text-[10px] text-slate-400 font-semibold mt-1 bg-slate-100 flex items-center justify-center px-2 py-0.5 rounded-full">Incl. GH₵{((stats?.currentMonthDue || 20) * 0.0355).toFixed(2)} fee</span>
+                                                <div className="text-xl font-extrabold text-primary-600">GH₵{((stats?.currentMonthDue || 20) * 1.032).toFixed(2)}</div>
+                                                <span className="text-[10px] text-slate-400 font-semibold mt-1 bg-slate-100 flex items-center justify-center px-2 py-0.5 rounded-full">Incl. GH₵{((stats?.currentMonthDue || 20) * 0.032).toFixed(2)} fee</span>
                                             </div>
                                         </label>
                                     )}
@@ -502,8 +500,8 @@ export default function PaymentsPage() {
                                                 </div>
                                             </div>
                                             <div className="text-right flex flex-col items-end">
-                                                <div className="text-xl font-extrabold text-primary-600">GH₵{(totalBalanceToPay * 1.0355).toFixed(2)}</div>
-                                                <span className="text-[10px] text-slate-400 font-semibold mt-1 bg-slate-100 flex items-center justify-center px-2 py-0.5 rounded-full">Incl. GH₵{(totalBalanceToPay * 0.0355).toFixed(2)} fee</span>
+                                                <div className="text-xl font-extrabold text-primary-600">GH₵{(totalBalanceToPay * 1.032).toFixed(2)}</div>
+                                                <span className="text-[10px] text-slate-400 font-semibold mt-1 bg-slate-100 flex items-center justify-center px-2 py-0.5 rounded-full">Incl. GH₵{(totalBalanceToPay * 0.032).toFixed(2)} fee</span>
                                             </div>
                                         </label>
                                     )}
@@ -538,7 +536,7 @@ export default function PaymentsPage() {
                                                     />
                                                     {customAmount && Number(customAmount) >= 70 && (
                                                         <span className="text-[10px] text-slate-400 font-semibold bg-slate-100 px-2 py-0.5 rounded-full mt-1">
-                                                            Total: GH₵{(Number(customAmount) * 1.0355).toFixed(2)} (Incl. fee)
+                                                            Total: GH₵{(Number(customAmount) * 1.032).toFixed(2)} (Incl. fee)
                                                         </span>
                                                     )}
                                                 </div>

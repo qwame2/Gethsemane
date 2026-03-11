@@ -14,7 +14,6 @@ export async function updateProfileImage(formData: FormData) {
     if (!userId) return { success: false, error: "Unauthorized" };
     const imageBase64 = formData.get("image") as string;
 
-    console.log("SERVER ACTION: updateProfileImage called for user:", userId);
     try {
         if (!imageBase64) throw new Error("No image data provided");
 
@@ -24,7 +23,6 @@ export async function updateProfileImage(formData: FormData) {
             select: { id: true, image: true }
         });
 
-        console.log("SERVER ACTION: Update successful for:", user.id);
         revalidatePath("/profile");
         revalidatePath("/dashboard");
 

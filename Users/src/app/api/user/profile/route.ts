@@ -43,7 +43,6 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
     try {
-        console.log("Profile PATCH request received");
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get("user_session")?.value;
         const session = sessionToken ? await decryptSession(sessionToken) : null;

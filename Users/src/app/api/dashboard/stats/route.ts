@@ -5,34 +5,24 @@ import { decryptSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-function log(msg: string) {
-    console.log(`[DASHBOARD-DEBUG] ${msg}`);
-}
 
 export async function GET() {
-    log("GET /api/dashboard/stats started");
     try {
         const cookieStore = await cookies();
         const sessionToken = cookieStore.get("user_session")?.value;
         const session = sessionToken ? await decryptSession(sessionToken) : null;
         const targetUserId = session?.id;
-        log(`User Session ID: ${targetUserId || "NONE"}`);
 
         if (!targetUserId) {
-            log("Error: Unauthorized");
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        log("Fetching user existence...");
         const userExists = await prisma.user.findUnique({ where: { id: targetUserId } });
-        log(`User exists: ${!!userExists}`);
 
         if (!userExists) {
-            log("Error: User not found");
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        log("Fetching dues profile and payments...");
         const now = new Date();
         const currentYear = now.getFullYear();
         const prevYear = currentYear - 1;
@@ -58,7 +48,6 @@ export async function GET() {
         const currentYearPayments = allPayments.filter(p => p.createdAt >= yearStartDate);
         const prevYearPayments = allPayments.filter(p => p.createdAt < yearStartDate);
 
-        log(`Payments found: Current(${currentYearPayments.length}), Prev(${prevYearPayments.length})`);
 
         // 1. Current Year Stats
         const curDuesPayments = currentYearPayments.filter(p => !p.eventId && !p.type?.toLowerCase().includes("fundraising"));
@@ -69,7 +58,6 @@ export async function GET() {
         const prevTotalAmountPaid = prevDuesPayments.reduce((sum, p) => sum + p.amount, 0);
 
         // 2. Fetch or Initialize System Settings for Financial Rates
-        log("Fetching/Initializing settings...");
         const settings = await prisma.systemSettings.upsert({
             where: { id: "singleton" },
             update: {},
@@ -195,7 +183,6 @@ export async function GET() {
             };
         }) : [];
 
-        log("Calculations complete, returning response.");
         return NextResponse.json({
             yearlyFee: YEARLY_FEE,
             totalAmountPaid,
@@ -217,7 +204,6 @@ export async function GET() {
         });
 
     } catch (error: any) {
-        log(`FATAL ERROR: ${error.message}`);
         console.error("Dashboard Stats GET Error:", error);
         // Fallback for UI so it doesn't stay in "Loading..."
         return NextResponse.json({

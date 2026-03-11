@@ -24,7 +24,6 @@ export async function POST(request: Request) {
         const { type, eventId } = bodyParts;
         let amountToPay = Number(bodyParts.amount);
 
-        console.log(`[INIT-DEBUG] Received - type: ${type}, eventId: ${eventId}, amount: ${amountToPay}`);
 
         const settings = await prisma.systemSettings.findUnique({ where: { id: "singleton" } });
 
@@ -62,7 +61,7 @@ export async function POST(request: Request) {
         });
 
         // Calculate final amount including the Gethsemane fee logic (3.55%)
-        const feeRate = 0.0355;
+        const feeRate = 0.032;
         const transactionFee = amountToPay * feeRate;
         const totalCharge = amountToPay + transactionFee;
 

@@ -55,7 +55,6 @@ async function verifyTransaction(reference: string, type?: string, eventId?: str
     let finalType = type || metadata.paymentType;
     let finalEventId = eventId || metadata.eventId;
 
-    console.log(`[VERIFY-DEBUG] Initial - userId: ${finalUserId}, type: ${finalType}, eventId: ${finalEventId}`);
 
     // Source of Truth: Look up PaymentIntent (Always check this as it's our own record)
     let intent = await (prisma as any).paymentIntent.findUnique({
@@ -71,7 +70,6 @@ async function verifyTransaction(reference: string, type?: string, eventId?: str
     }
 
     if (intent) {
-        console.log(`[VERIFY-DEBUG] Intent found:`, intent);
         finalUserId = finalUserId || intent.userId;
 
         // Prioritize specific intent type over metadata fallback
@@ -88,14 +86,13 @@ async function verifyTransaction(reference: string, type?: string, eventId?: str
         }
     }
 
-    console.log(`[VERIFY-DEBUG] Resolved - userId: ${finalUserId}, type: ${finalType}, eventId: ${finalEventId}`);
 
     if (!finalUserId) {
         return { error: "Could not identify user for this transaction", status: 401 };
     }
 
     const rawPaystackAmount = paystackData.data.amount / 100; // Paystack returns in kobo
-    const actualAmount = Math.round((rawPaystackAmount / 1.0355) * 100) / 100;
+    const actualAmount = Math.round((rawPaystackAmount / 1.032) * 100) / 100;
 
     // 4. Create transaction record in database
     const payment = await prisma.payment.create({

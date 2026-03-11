@@ -9,7 +9,6 @@ export async function createFundraisingEvent(data: {
     goalAmount?: number;
     endDate?: Date;
 }) {
-    console.log("Creating Fundraising Event with data:", data);
     try {
         const event = await prisma.fundraisingEvent.create({
             data: {

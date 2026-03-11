@@ -20,7 +20,6 @@ export async function registerAdmin(formData: FormData) {
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     try {
-        console.log("Attempting to create admin in DB...", { email, username, firstName, lastName });
         const newAdmin = await prisma.admin.create({
             data: {
                 email,
@@ -32,7 +31,6 @@ export async function registerAdmin(formData: FormData) {
                 isSetupComplete: false,
             },
         });
-        console.log("Admin created successfully:", newAdmin.id);
     } catch (error: any) {
         console.error("Registration error:", error);
         // Handle Prisma unique constraint violations

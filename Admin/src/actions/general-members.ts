@@ -19,7 +19,6 @@ export interface UnifiedMember {
 
 export async function getGeneralMembers(search?: string) {
     try {
-        console.log("Fetching directory members, search:", search);
         // 1. Fetch Dues-Paying Users (Automatically "Youth")
         const users = await prisma.user.findMany({
             where: search ? {
@@ -33,7 +32,6 @@ export async function getGeneralMembers(search?: string) {
             orderBy: { createdAt: 'desc' }
         });
 
-        console.log(`Found ${users.length} users (Youth)`);
 
         // 2. Fetch General Church Members (Children, Women, Men)
         let churchMembers = [];
@@ -49,7 +47,6 @@ export async function getGeneralMembers(search?: string) {
                 } : {},
                 orderBy: { createdAt: 'desc' }
             });
-            console.log(`Found ${churchMembers.length} church members`);
         } catch (cmError) {
             console.error("Error fetching churchMembers:", cmError);
         }
@@ -94,7 +91,6 @@ export async function getGeneralMembers(search?: string) {
                 }) : "N/A"
             }));
 
-        console.log(`Returning ${result.length} unified members`);
         return result;
 
     } catch (error) {
