@@ -37,8 +37,9 @@ export default function DashboardOverviewPage() {
                 if (statsRes.ok) setStats(await statsRes.json());
                 if (profileRes.ok) setUserData(await profileRes.json());
                 if (paymentsRes.ok) {
-                    const payments = await paymentsRes.json();
-                    setRecentPayments(payments.slice(0, 2));
+                    const data = await paymentsRes.json();
+                    const paymentsArray = data.transactions || [];
+                    setRecentPayments(paymentsArray.slice(0, 2));
                 }
             } catch (err) {
                 console.error("Dashboard Load Error:", err);

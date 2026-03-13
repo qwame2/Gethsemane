@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { decryptSession } from "@/lib/session";
+import { limiter } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
-
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const targetUserId = session?.id;
+        // Rate Limiting Check
+        const ip = request.headers.get("x-forwarded-for") || "anonymous";
+        const { success } = await limiter.check(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
+        const targetUserId = request.headers.get("X-User-Id");
 
         if (!targetUserId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ error: "Unauthorized: Missing identity context" }, { status: 401 });
         }
 
         const userExists = await prisma.user.findUnique({ where: { id: targetUserId } });
@@ -42,7 +48,14 @@ export async function GET() {
                     gte: prevYearStartDate
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                createdAt: true,
+                amount: true,
+                type: true,
+                eventId: true,
+            }
         });
 
         const currentYearPayments = allPayments.filter(p => p.createdAt >= yearStartDate);
@@ -203,7 +216,7 @@ export async function GET() {
             prevYear
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Dashboard Stats GET Error:", error);
         // Fallback for UI so it doesn't stay in "Loading..."
         return NextResponse.json({

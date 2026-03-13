@@ -6,6 +6,7 @@ import {
     Filter,
     Trash2,
     MoreHorizontal,
+    ChevronLeft,
     ChevronRight,
     ArrowUpDown,
     Check,
@@ -16,17 +17,21 @@ import { cn } from "@/lib/utils";
 
 export default function TransactionsPage() {
     const [transactions, setTransactions] = useState<any[]>([]);
+    const [pagination, setPagination] = useState({ total: 0, page: 0, limit: 20, pages: 0 });
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
 
     useEffect(() => {
         const fetchTransactions = async () => {
+            setIsLoading(true);
             try {
-                const response = await fetch("/api/payments");
+                const response = await fetch(`/api/payments?page=${currentPage}&limit=20`);
                 if (response.ok) {
                     const data = await response.json();
-                    setTransactions(data);
+                    setTransactions(data.transactions || []);
+                    if (data.pagination) setPagination(data.pagination);
                 }
             } catch (error) {
                 console.error("Failed to fetch transactions:", error);
@@ -36,7 +41,7 @@ export default function TransactionsPage() {
         };
 
         fetchTransactions();
-    }, []);
+    }, [currentPage]);
 
     const toggleSelectAll = () => {
         if (selectedIds.length === transactions.length) {
@@ -238,6 +243,37 @@ export default function TransactionsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {pagination.pages > 1 && (
+                <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                    <p className="text-sm font-bold text-slate-400">
+                        Page <span className="text-black">{pagination.page + 1}</span> of <span className="text-black">{pagination.pages}</span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                            disabled={currentPage === 0}
+                            className="h-10 px-4 rounded-xl font-bold hover:bg-slate-100 disabled:opacity-40 transition-all"
+                        >
+                            <ChevronLeft className="h-4 w-4 mr-2" />
+                            Prev
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(pagination.pages - 1, prev + 1))}
+                            disabled={currentPage >= pagination.pages - 1}
+                            className="h-10 px-4 rounded-xl font-bold hover:bg-slate-100 disabled:opacity-40 transition-all"
+                        >
+                            Next
+                            <ChevronRight className="h-4 w-4 ml-2" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

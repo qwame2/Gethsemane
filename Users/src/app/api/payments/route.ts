@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { decryptSession } from "@/lib/session";
+import { limiter } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const targetUserId = session?.id;
+        // Rate Limiting Check
+        const ip = request.headers.get("x-forwarded-for") || "anonymous";
+        const { success } = await limiter.check(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: "Too many requests. Please try again later." },
+                { status: 429 }
+            );
+        }
+
+        // Middleware already validated the session and injected headers
+        const targetUserId = request.headers.get("X-User-Id");
 
         if (!targetUserId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ error: "Unauthorized: Missing identity context" }, { status: 401 });
         }
 
         const userExists = await prisma.user.findUnique({ where: { id: targetUserId } });
@@ -20,9 +28,24 @@ export async function GET() {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get("page") || "0");
+        const limit = parseInt(searchParams.get("limit") || "20");
+
         const payments = await prisma.payment.findMany({
             where: { userId: targetUserId },
             orderBy: { createdAt: "desc" },
+            take: limit,
+            skip: page * limit,
+            select: {
+                id: true,
+                transactionId: true,
+                createdAt: true,
+                amount: true,
+                status: true,
+                type: true,
+                eventId: true,
+            }
         });
 
         // Map database fields to UI fields
@@ -41,17 +64,31 @@ export async function GET() {
 
             return {
                 id: p.transactionId || p.id,
-                date: p.createdAt.toISOString().split('T')[0],
+                date: new Date(p.createdAt).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                }).split('/').reverse().join('-'), // Returns YYYY-MM-DD safely
                 desc: description,
                 amount: p.amount,
-                status: p.status.toLowerCase(),
+                status: p.status?.toLowerCase() || "unknown",
                 type: p.type
             };
         });
 
-        return NextResponse.json(transactions);
+        const totalPayments = await prisma.payment.count({ where: { userId: targetUserId } });
 
-    } catch (error: any) {
+        return NextResponse.json({
+            transactions,
+            pagination: {
+                total: totalPayments,
+                page,
+                limit,
+                pages: Math.ceil(totalPayments / limit)
+            }
+        });
+
+    } catch (error: unknown) {
         console.error("Payments GET Error:", error);
         return NextResponse.json({ error: "Failed to fetch payments" }, { status: 500 });
     }

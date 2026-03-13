@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { decryptSession } from "@/lib/session";
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const userId = session?.id;
+        const userId = request.headers.get("X-User-Id");
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -57,7 +52,7 @@ export async function GET() {
             const timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateString = dateObj.toLocaleDateString();
 
-            if (payment.status.toLowerCase() === "completed") {
+            if (payment.status?.toLowerCase() === "completed") {
                 const isArrears = payment.type === "arrears";
                 const isFundraising = payment.eventId || payment.type?.toLowerCase().includes("fundraising");
                 const paymentId = `payment-${payment.id}`;
@@ -75,7 +70,7 @@ export async function GET() {
                         action: { label: "View Receipt", href: "/transactions" }
                     });
                 }
-            } else if (payment.status.toLowerCase() === "pending") {
+            } else if (payment.status?.toLowerCase() === "pending") {
                 const pendingId = `payment-pending-${payment.id}`;
                 if (!dismissed.includes(pendingId)) {
                     notifications.push({
@@ -118,7 +113,7 @@ export async function GET() {
 
         return NextResponse.json(notifications);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Notifications GET Error:", error);
         return NextResponse.json({ error: "Failed to load notifications" }, { status: 500 });
     }
@@ -126,10 +121,7 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const userId = session?.id;
+        const userId = request.headers.get("X-User-Id");
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -153,14 +145,14 @@ export async function DELETE(request: Request) {
                 where: { id: userId },
                 data: { dismissedNotifications: { push: ids } }
             });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Notifications DELETE Error:", error);
             return NextResponse.json({ error: "Failed to delete notifications" }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Notifications DELETE Error:", error);
         return NextResponse.json({ error: "Failed to delete notifications" }, { status: 500 });
     }

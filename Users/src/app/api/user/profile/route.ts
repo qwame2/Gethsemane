@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcrypt";
-import { decryptSession } from "@/lib/session";
+import { profileUpdateSchema } from "@/lib/validations";
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const userId = session?.id;
+        const userId = request.headers.get("X-User-Id");
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,7 +31,7 @@ export async function GET() {
         }
 
         return NextResponse.json(user);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Profile GET Error:", error);
         return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
     }
@@ -43,17 +39,24 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
     try {
-        const cookieStore = await cookies();
-        const sessionToken = cookieStore.get("user_session")?.value;
-        const session = sessionToken ? await decryptSession(sessionToken) : null;
-        const userId = session?.id;
+        const userId = request.headers.get("X-User-Id");
 
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const body = await request.json();
-        const { firstName, lastName, phone, username, currentPassword, newPassword, image } = body;
+
+        // 1. Validate Input Schema
+        const validatedData = profileUpdateSchema.safeParse(body);
+        if (!validatedData.success) {
+            return NextResponse.json(
+                { error: validatedData.error.issues[0].message },
+                { status: 400 }
+            );
+        }
+
+        const data = validatedData.data;
 
         const targetUser = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -62,26 +65,21 @@ export async function PATCH(request: Request) {
         }
 
         const updateData: any = {};
-        if (firstName !== undefined) updateData.firstName = firstName;
-        if (lastName !== undefined) updateData.lastName = lastName;
-        if (phone !== undefined) updateData.phone = phone;
-        if (username !== undefined) updateData.username = username;
+        if (data.firstName !== undefined) updateData.firstName = data.firstName;
+        if (data.lastName !== undefined) updateData.lastName = data.lastName;
+        if (data.phone !== undefined) updateData.phone = data.phone;
+        if (data.username !== undefined) updateData.username = data.username;
+        if (data.image !== undefined) updateData.image = data.image;
 
-        if (image !== undefined) {
-            updateData.image = image;
-        }
-
-        if (newPassword) {
-            if (!currentPassword) {
-                return NextResponse.json({ error: "Current password is required to set a new password" }, { status: 400 });
-            }
-
-            const isPasswordValid = await bcrypt.compare(currentPassword, targetUser.passwordHash);
+        if (data.newPassword) {
+            // Currect password check is handled by Zod's .refine(), 
+            // but we still need to verify the hash match here.
+            const isPasswordValid = await bcrypt.compare(data.currentPassword!, targetUser.passwordHash);
             if (!isPasswordValid) {
                 return NextResponse.json({ error: "Invalid current password" }, { status: 401 });
             }
 
-            const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+            const hashedNewPassword = await bcrypt.hash(data.newPassword, 10);
             updateData.passwordHash = hashedNewPassword;
         }
 
@@ -101,11 +99,11 @@ export async function PATCH(request: Request) {
         });
 
         return NextResponse.json(updatedUser);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Profile PATCH Error Detail:", error);
         return NextResponse.json({
             error: "Failed to update profile",
-            details: error.message || "Unknown error"
+            details: (error as Error).message || "Unknown error"
         }, { status: 500 });
     }
 }

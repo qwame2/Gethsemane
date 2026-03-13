@@ -1,21 +1,38 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcrypt";
+import { authLimiter } from "@/lib/rate-limit";
+import { registerSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
     try {
+        // Rate Limiting Check
+        const ip = request.headers.get("x-forwarded-for") || "anonymous";
+        const { success } = await authLimiter.check(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: "Too many registration attempts. Please try again later." },
+                { status: 429 }
+            );
+        }
+
         const body = await request.json();
 
-        if (!body.email || !body.password || !body.firstName || !body.lastName || !body.username || !body.securityQuestion1 || !body.securityAnswer1 || !body.securityQuestion2 || !body.securityAnswer2) {
+        // 1. Validate Input Schema
+        const validatedData = registerSchema.safeParse(body);
+        if (!validatedData.success) {
             return NextResponse.json(
-                { error: "All profile fields and two distinct security questions are required" },
+                { error: validatedData.error.issues[0].message },
                 { status: 400 }
             );
         }
 
+        const data = validatedData.data;
+
         // Check if user already exists
         const existingEmail = await prisma.user.findUnique({
-            where: { email: body.email }
+            where: { email: data.email }
         });
 
         if (existingEmail) {
@@ -26,7 +43,7 @@ export async function POST(request: Request) {
         }
 
         const existingUsername = await prisma.user.findUnique({
-            where: { username: body.username }
+            where: { username: data.username }
         });
 
         if (existingUsername) {
@@ -37,22 +54,22 @@ export async function POST(request: Request) {
         }
 
         // Hash password and security answers
-        const hashedPassword = await bcrypt.hash(body.password, 10);
-        const hashedAnswer1 = await bcrypt.hash(body.securityAnswer1.trim().toLowerCase(), 10);
-        const hashedAnswer2 = await bcrypt.hash(body.securityAnswer2.trim().toLowerCase(), 10);
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        const hashedAnswer1 = await bcrypt.hash(data.securityAnswer1.trim().toLowerCase(), 10);
+        const hashedAnswer2 = await bcrypt.hash(data.securityAnswer2.trim().toLowerCase(), 10);
 
         // Create User and default DuesProfile in database
         const newUser = await prisma.user.create({
             data: {
-                firstName: body.firstName,
-                lastName: body.lastName,
-                email: body.email,
-                username: body.username,
-                phone: body.phone || null,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                username: data.username,
+                phone: data.phone || null,
                 passwordHash: hashedPassword,
-                securityQuestion1: body.securityQuestion1,
+                securityQuestion1: data.securityQuestion1,
                 securityAnswer1: hashedAnswer1,
-                securityQuestion2: body.securityQuestion2,
+                securityQuestion2: data.securityQuestion2,
                 securityAnswer2: hashedAnswer2,
                 duesProfile: {
                     create: {
@@ -76,7 +93,7 @@ export async function POST(request: Request) {
             },
             { status: 201 }
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(error);
         return NextResponse.json(
             { error: "Internal Server Error" },
