@@ -33,4 +33,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Super Admin Protocol
+
+This project includes a secure, classified **Super Admin** layer designed for emergency account recovery and high-level system monitoring.
+
+### 🛡️ Core Functionality
+- **Stealth Access**: The Super Admin entry point is invisible by default. Access is triggered by double-clicking empty space on the sidebar and entering the classified protocol password.
+- **Dynamic OTP Generation**: For security, account resets generate a cryptographically random One-Time Password (OTP) rather than a static default.
+- **Live Audit Engine**: Every action (logins, resets, payment recording, member deletion) is captured in real-time.
+- **Identity Tracking**: The system identifies the actual Admin name executing Super Admin powers, ensuring 100% accountability.
+
+### 🔑 Security Protocol
+- **Override Password**: Must contain `112000` and exactly 6 alphabetical letters (anywhere in the sequence).
+- **Session Control**: Super Admin sessions are strictly limited to 2 hours of inactivity before automatic termination.
+- **Audit Trails**: All "Executive Node" activities are recorded in the `AuditLog` table and displayed on the Super Admin dashboard.
+
+---
+For more details, see the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).
