@@ -20,6 +20,8 @@ export default function DashboardHeader({ adminName, adminInitials, adminImage }
     const router = useRouter();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    const inputRef = useRef<HTMLInputElement>(null);
+
     // Close dropdown on click outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -29,6 +31,18 @@ export default function DashboardHeader({ adminName, adminInitials, adminImage }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Keyboard shortcut (Cmd+K or Ctrl+K) to focus search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
     }, []);
 
     useEffect(() => {
@@ -71,6 +85,7 @@ export default function DashboardHeader({ adminName, adminInitials, adminImage }
             const event = new CustomEvent('dashboardSearch', { detail: "" });
             window.dispatchEvent(event);
         }
+        inputRef.current?.focus();
     };
 
     const handleNavigate = (path: string) => {
@@ -88,35 +103,48 @@ export default function DashboardHeader({ adminName, adminInitials, adminImage }
     );
 
     return (
-        <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white/70 backdrop-blur-md px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 relative">
-                <form id="search-form" className="relative flex flex-1 items-center" onSubmit={handleSearch}>
+        <header className="sticky top-0 z-50 flex h-16 md:h-20 shrink-0 items-center gap-x-4 border-b border-gray-100 bg-white/80 backdrop-blur-xl px-4 shadow-[0_4px_30px_rgba(0,0,0,0.03)] sm:gap-x-6 sm:px-6 lg:px-8 transition-all">
+            <div className="flex flex-1 gap-x-4 self-stretch relative items-center justify-between">
+                <form id="search-form" className="relative flex flex-1 items-center max-w-3xl w-full" onSubmit={handleSearch}>
                     <label htmlFor="search-field" className="sr-only">Search</label>
-                    <Search className="pointer-events-none absolute left-0 h-5 w-5 text-gray-400" aria-hidden="true" />
-                    <input
-                        id="search-field"
-                        className="block h-full w-full border-0 py-0 pl-8 pr-10 text-gray-900 placeholder:text-gray-500 focus:ring-0 sm:text-sm bg-transparent font-medium"
-                        placeholder="Search members, activities, payments..."
-                        type="text"
-                        autoComplete="off"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onFocus={() => { if (searchTerm.trim().length > 1) setShowResults(true); }}
-                    />
-                    {searchTerm && (
-                        <button 
-                            type="button" 
-                            onClick={clearSearch}
-                            className="absolute right-0 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    )}
+                    <div className="relative group flex items-center w-full bg-gray-50/80 hover:bg-white border border-gray-200/50 hover:border-gray-300 transition-all rounded-2xl shadow-inner focus-within:bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 h-10 md:h-12 overflow-hidden">
+                        <Search className="absolute left-3 md:left-4 h-4 w-4 md:h-5 md:w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" aria-hidden="true" />
+                        <input
+                            ref={inputRef}
+                            id="search-field"
+                            className="block h-full w-full border-0 py-0 pl-10 md:pl-12 pr-12 md:pr-24 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-sm md:text-base bg-transparent font-medium outline-none"
+                            placeholder="Search members, activities, payments..."
+                            type="text"
+                            autoComplete="off"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onFocus={() => { if (searchTerm.trim().length > 1) setShowResults(true); }}
+                        />
+                        
+                        {/* Keyboard shortcut hint - Desktop only */}
+                        {!searchTerm && (
+                            <div className="absolute right-4 hidden md:flex items-center gap-1 opacity-60 group-focus-within:opacity-0 transition-opacity pointer-events-none">
+                                <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded md:rounded-md text-[10px] font-black text-gray-500 shadow-sm">⌘</kbd>
+                                <kbd className="px-1.5 py-0.5 bg-white border border-gray-200 rounded md:rounded-md text-[10px] font-black text-gray-500 shadow-sm">K</kbd>
+                            </div>
+                        )}
+
+                        {/* Clear button */}
+                        {searchTerm && (
+                            <button 
+                                type="button" 
+                                onClick={clearSearch}
+                                className="absolute right-2 md:right-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
                 </form>
 
                 {/* Search Results Dropdown */}
                 {showResults && (
-                    <div ref={dropdownRef} className="absolute top-[3.5rem] left-0 w-full md:w-[600px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[100] max-h-[80vh] flex flex-col">
+                    <div ref={dropdownRef} className="absolute top-[4rem] md:top-[5rem] left-0 w-full md:w-[600px] bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-100/80 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-[100] max-h-[80vh] flex flex-col">
                         <div className="p-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between shrink-0">
                             <span className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Global Search</span>
                             {isSearching && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}

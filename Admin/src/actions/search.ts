@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function globalSearch(query: string) {
     if (!query || query.trim().length === 0) {
