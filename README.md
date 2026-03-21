@@ -144,6 +144,123 @@ Clear confirmation flows for sensitive actions like logout.
 
 > Built for decision-making — not data entry.
 
+---
+
+## 🛡️ Admin Experience (Control System)
+
+### 🔐 Admin Authentication
+
+Secure access layer with role-based protection.
+
+![Admin Login](./screenshots/admin-login.png)
+
+---
+
+### 📊 Admin Dashboard Overview
+
+Real-time insights into members, finances, and system activity.
+
+![Admin Dashboard](./screenshots/admin-dashboard.png)
+
+---
+
+### 📁 Church Directory
+
+Centralized view of all registered members across fellowships.
+
+![Directory](./screenshots/admin-directory.png)
+
+---
+
+### ➕ Member Registration
+
+Seamless onboarding flow for adding new members to the system.
+
+![Add Member](./screenshots/admin-add-member.png)
+
+---
+
+### 👥 Member Management
+
+Track member status, arrears, and detailed information.
+
+![Members](./screenshots/admin-members.png)
+
+---
+
+### 💳 Payments Management
+
+Monitor contributions, dues, and financial records in real-time.
+
+![Payments](./screenshots/admin-payments.png)
+
+---
+
+### 🧾 Financial Reports
+
+Auto-generated summaries for transparency and decision-making.
+
+![Reports](./screenshots/admin-reports.png)
+
+---
+
+### 📅 Events & Fundraising
+
+Create and manage fundraising campaigns and church events.
+
+![Events](./screenshots/admin-events.png)
+
+---
+
+### ➕ Create Fundraising Campaign
+
+Launch new campaigns with structured financial goals.
+
+![Create Campaign](./screenshots/admin-create-fundraising.png)
+
+---
+
+### ⚙️ System Configuration
+
+Manage global church settings and operational parameters.
+
+![Settings](./screenshots/admin-settings.png)
+
+---
+
+### 💰 Financial Configuration Engine
+
+Dynamic system that controls dues, penalties, and calculations.
+
+![Financial Config](./screenshots/admin-financial-settings.png)
+
+---
+
+### 🔐 Security & Authentication Settings
+
+Admin-level password and system security controls.
+
+![Security](./screenshots/admin-security.png)
+
+---
+
+### ➕ Admin Registration
+
+Controlled onboarding for administrative users.
+
+![Admin Register](./screenshots/admin-register.png)
+
+---
+
+### 💸 Record Payment (Admin Action)
+
+Manual payment recording for offline or assisted transactions.
+
+![Record Payment](./screenshots/admin-record-payment.png)
+
+---
+
+
 * 👥 **Centralized Member Management**
 * 🧩 **Fellowship Segmentation**
 
