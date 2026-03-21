@@ -260,6 +260,21 @@ Manual payment recording for offline or assisted transactions.
 
 ---
 
+## Super Admin Protocol
+
+This project includes a secure, classified **Super Admin** layer designed for emergency account recovery and high-level system monitoring.
+
+### 🛡️ Core Functionality
+- **Stealth Access**: The Super Admin entry point is invisible by default. Access is triggered by double-clicking empty space on the sidebar and entering the classified protocol password.
+- **Dynamic OTP Generation**: For security, account resets generate a cryptographically random One-Time Password (OTP) rather than a static default.
+- **Live Audit Engine**: Every action (logins, resets, payment recording, member deletion) is captured in real-time.
+- **Identity Tracking**: The system identifies the actual Admin name executing Super Admin powers, ensuring 100% accountability.
+
+### 🔑 Security Protocol
+- **Override Password**: Must contain `112000` and exactly 6 alphabetical letters (anywhere in the sequence).
+- **Session Control**: Super Admin sessions are strictly limited to 2 hours of inactivity before automatic termination.
+- **Audit Trails**: All "Executive Node" activities are recorded in the `AuditLog` table and displayed on the Super Admin dashboard.
+
 
 * 👥 **Centralized Member Management**
 * 🧩 **Fellowship Segmentation**
