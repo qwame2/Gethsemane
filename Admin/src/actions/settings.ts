@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
+import { logAuditAction, getAdminActor } from "./superadmin";
 
 export async function getSystemSettings() {
     try {
@@ -63,6 +64,14 @@ export async function updateSystemSettings(formData: FormData) {
             update: updateData,
             create: { id: "singleton", ...updateData }
         });
+
+        const actor = await getAdminActor();
+        
+        let details = "Updated system settings. ";
+        if (updateData.monthlyDues) details += `Monthly Dues set to ${updateData.monthlyDues}. `;
+        if (updateData.yearlyDues) details += `Yearly Dues set to ${updateData.yearlyDues}. `;
+        
+        await logAuditAction(actor, "Admin", "UPDATED", "System Settings", details.trim());
 
         revalidatePath("/dashboard/settings");
         return { success: true, settings: updated };

@@ -237,6 +237,16 @@ exports.Prisma.PaymentLedgerScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  actorName: 'actorName',
+  actorRole: 'actorRole',
+  action: 'action',
+  entity: 'entity',
+  details: 'details',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -262,7 +272,8 @@ exports.Prisma.ModelName = {
   FundraisingEvent: 'FundraisingEvent',
   SystemSettings: 'SystemSettings',
   PaymentIntent: 'PaymentIntent',
-  PaymentLedger: 'PaymentLedger'
+  PaymentLedger: 'PaymentLedger',
+  AuditLog: 'AuditLog'
 };
 
 /**

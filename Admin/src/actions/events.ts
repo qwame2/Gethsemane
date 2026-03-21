@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { logAuditAction, getAdminActor } from "./superadmin";
 
 export async function createFundraisingEvent(data: {
     title: string;
@@ -19,6 +20,10 @@ export async function createFundraisingEvent(data: {
                 isActive: false, // Default to inactive until admin activates
             }
         });
+        
+        const actor = await getAdminActor();
+        await logAuditAction(actor, "Admin", "CREATED", "Fundraising Event", `Created a new event: ${data.title}`);
+
         revalidatePath("/dashboard/events");
         return { success: true, event };
     } catch (error: any) {
@@ -44,6 +49,10 @@ export async function toggleEventStatus(id: string, isActive: boolean) {
             where: { id },
             data: { isActive }
         });
+        
+        const actor = await getAdminActor();
+        await logAuditAction(actor, "Admin", "UPDATED", "Fundraising Event", `Toggled status. Event is now ${isActive ? 'Active' : 'Inactive'}.`);
+
         revalidatePath("/dashboard/events");
         revalidatePath("/dashboard/payments"); // Users see this
         return { success: true };
@@ -55,7 +64,14 @@ export async function toggleEventStatus(id: string, isActive: boolean) {
 
 export async function deleteEvent(id: string) {
     try {
+        const ev = await prisma.fundraisingEvent.findUnique({ where: { id } });
         await prisma.fundraisingEvent.delete({ where: { id } });
+        
+        const actor = await getAdminActor();
+        if (ev) {
+            await logAuditAction(actor, "Admin", "DELETED", "Fundraising Event", `Deleted event: ${ev.title}`);
+        }
+
         revalidatePath("/dashboard/events");
         return { success: true };
     } catch (error) {

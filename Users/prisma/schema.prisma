@@ -140,3 +140,14 @@ model PaymentLedger {
   @@index([userId])
   @@index([createdAt])
 }
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorName String   // Name of the person who did it
+  actorRole String   // "System", "Admin", "SuperAdmin", "User"
+  action    String   // "DELETED", "UPDATED", "RESET", etc.
+  entity    String   // "User", "Admin", "Payment", etc.
+  details   String   // What changed
+  createdAt DateTime @default(now())
+}
+

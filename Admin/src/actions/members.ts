@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import { logAuditAction, getAdminActor } from "./superadmin";
 
 export async function getMembers(search?: string) {
     try {
@@ -86,9 +87,16 @@ export async function getMembers(search?: string) {
 
 export async function deleteMember(id: string) {
     try {
+        const member = await prisma.user.findUnique({ where: { id }});
         await prisma.user.delete({
             where: { id }
         });
+
+        if (member) {
+            const actor = await getAdminActor();
+            await logAuditAction(actor, "Admin", "DELETED", "Member", `Erased member profile: ${member.firstName} ${member.lastName} (${member.email})`);
+        }
+
         return { success: true };
     } catch (error) {
         console.error("Failed to delete member:", error);
@@ -154,6 +162,9 @@ export async function createMember(data: {
             return user;
         });
 
+        const actor = await getAdminActor();
+        await logAuditAction(actor, "Admin", "CREATED", "Member", `Registered new member: ${data.firstName} ${data.lastName} (${data.email})`);
+
         return { success: true, user: result };
     } catch (error: any) {
         console.error("Failed to create member:", error);
@@ -182,6 +193,8 @@ export async function updateMemberContact(id: string, data: { email: string; pho
 
 export async function updateMemberDues(id: string, data: { status: string; totalArrears: number }) {
     try {
+        const profile = await prisma.duesProfile.findUnique({ where: { userId: id }, include: { user: true }});
+        
         await prisma.duesProfile.update({
             where: { userId: id },
             data: {
@@ -189,6 +202,13 @@ export async function updateMemberDues(id: string, data: { status: string; total
                 totalArrears: data.totalArrears
             }
         });
+
+        if (profile?.user) {
+            const actor = await getAdminActor();
+            const actionType = (data.totalArrears > profile.totalArrears) ? "Increased" : (data.totalArrears < profile.totalArrears ? "Decreased" : "Modified");
+            await logAuditAction(actor, "Admin", "UPDATED", "Dues Profile", `${actionType} total arrears to ${data.totalArrears} for ${profile.user.firstName} ${profile.user.lastName}`);
+        }
+
         return { success: true };
     } catch (error: any) {
         console.error("Failed to update dues:", error);

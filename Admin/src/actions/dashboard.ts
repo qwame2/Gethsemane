@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { logAuditAction, getAdminActor } from "./superadmin";
 
 export async function getTotalMembers() {
     try {
@@ -288,6 +289,20 @@ export async function createTransaction(data: {
 
             return payment;
         });
+
+        if (data.status === "Completed") {
+            const actor = await getAdminActor();
+            const user = await prisma.user.findUnique({ where: { id: data.userId }, select: { firstName: true, lastName: true, email: true } });
+            if (user) {
+                await logAuditAction(
+                    actor, 
+                    "Admin", 
+                    "CREATED", 
+                    "Payment", 
+                    `Recorded new payment of GHS ${data.amount} for user: ${user.firstName} ${user.lastName} (${user.email})`
+                );
+            }
+        }
 
         return { success: true, transactionId: result.transactionId };
     } catch (error) {
