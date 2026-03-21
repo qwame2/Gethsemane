@@ -61,6 +61,83 @@ It consists of:
 * 👤 **Personal Profile & Fellowship Data**
 * 🎮 **Engagement Layer (Bible Quest - upcoming)**
 
+  ---
+
+## 🖼️ Product Experience (Real UI)
+
+### 🔐 Authentication
+
+Clean and minimal login experience designed for accessibility and speed.
+
+![Login](./screenshots/login.png)
+
+---
+
+### 📊 Dashboard Overview
+
+A real-time snapshot of member activity, payments, and status.
+
+![Dashboard](./screenshots/dashboard.png)
+
+---
+
+### 💳 Payments & Dues
+
+Flexible payment system with clear breakdown and yearly tracking.
+
+![Payments](./screenshots/payments.png)
+
+---
+
+### 💸 Secure Payment Flow
+
+Seamless mobile money integration with secure transaction handling.
+
+![Payment Modal](./screenshots/payment-modal.png)
+
+---
+
+### ✅ Payment Confirmation
+
+Instant feedback after successful transactions.
+
+![Payment Success](./screenshots/payment-success.png)
+
+---
+
+### 🧾 Digital Receipt
+
+Verified and structured receipt system for transparency.
+
+![Receipt](./screenshots/receipt.png)
+
+---
+
+### 📜 Transactions History
+
+Track all payments with a clean, searchable interface.
+
+![Transactions](./screenshots/transactions.png)
+
+---
+
+### 👤 Profile Management
+
+User account management with clear structure and accessibility.
+
+![Profile](./screenshots/profile.png)
+
+---
+
+### 🚪 Security & Session Control
+
+Clear confirmation flows for sensitive actions like logout.
+
+![Logout](./screenshots/logout.png)
+
+---
+
+
 ---
 
 ### 🛡️ Admin Dashboard (Admin App)
